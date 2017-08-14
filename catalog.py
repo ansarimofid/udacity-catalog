@@ -66,7 +66,7 @@ def add_item_save():
         cat_id=form['cat_id'])
     session.add(item)
     session.commit()
-    return redirect(url_for('add_item'))
+    return redirect(url_for('index'))
 
 
 @app.route('/catalog/<category>/')
@@ -99,14 +99,20 @@ def edit_item(category,item_id):
 
 
 
-@app.route('/catalog/<item_id>e/save', methods=['POST'])
+@app.route('/catalog/<item_id>/save', methods=['POST'])
 def save_item(item_id):
 
+    form = request.form
     item = session.query(Item).filter(Item.id == item_id).first()
 
-    return render_template(
-        'item_form.html',
-        target_url=url_for('add_item_save'), category_list=category, item=Item())
+    item.title = form['title']
+    item.description = form['desc']
+    item.cat_id = form['cat_id']
+
+    session.add(item)
+    session.commit()
+
+    return redirect(url_for('index'))
 
 
 
