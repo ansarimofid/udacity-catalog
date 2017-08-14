@@ -1,17 +1,71 @@
-from flask import Flask,render_template, request, redirect, url_for, jsonify
-from sqlalchemy import create_engine,desc
+from flask import Flask, render_template, request, redirect, url_for, jsonify
+from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
+
+from flask_login import LoginManager, login_required, login_user, \
+    logout_user, current_user, UserMixin
+from requests_oauthlib import OAuth2Session
+from requests.exceptions import HTTPError
 
 from database_setup import Base, Category, Item, User
 from helper import getCategories
+import os
+import json
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+"""Configuration"""
+
+
+class Auth:
+    """Google Project Credentials"""
+    CLIENT_ID = ('747877814525-6nb508gui4o896ibppgics50v6bs7srm.apps.googleusercontent.com')
+    CLIENT_SECRET = 'pvMBKkrRR7OU7Hj_5S6S9uMN'
+    REDIRECT_URI = 'https://localhost:5000/gCallback'
+    AUTH_URI = 'https://accounts.google.com/o/oauth2/auth'
+    TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
+    USER_INFO = 'https://www.googleapis.com/userinfo/v2/me'
+    SCOPE = ['profile', 'email']
+
+
+class Config:
+    """Base config"""
+    APP_NAME = "catalog-app"
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "somethingsecret"
+
+
+"""initialisation"""
 app = Flask(__name__)
-
+# app.config.from_object(config['dev'])
 engine = create_engine('sqlite:///catalog.db')
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
+
+login_manager = LoginManager(app)
+login_manager.login_view = "login"
+login_manager.session_protection = "strong"
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return session.query(User).filter(User.id == user_id).first()
+
+
+def get_google_auth(state=None, token=None):
+    if token:
+        return OAuth2Session(Auth.CLIENT_ID, token=token)
+    if state:
+        return OAuth2Session(
+            Auth.CLIENT_ID,
+            state=state,
+            redirect_uri=Auth.REDIRECT_URI)
+    oauth = OAuth2Session(
+        Auth.CLIENT_ID,
+        redirect_uri=Auth.REDIRECT_URI,
+        scope=Auth.SCOPE)
+    return oauth
 
 
 @app.errorhandler(404)
@@ -32,6 +86,7 @@ def view_category_json():
 
 
 @app.route('/categories/add/')
+@login_required
 def add_category():
     return render_template(
         'category_form.html',
@@ -39,6 +94,7 @@ def add_category():
 
 
 @app.route('/categories/add/', methods=['POST'])
+@login_required
 def add_category_save():
     form = request.form
 
@@ -55,6 +111,7 @@ def view_catalog_json():
 
 
 @app.route('/catalog/add/')
+@login_required
 def add_item():
     category = session.query(Category).all()
     return render_template(
@@ -63,6 +120,7 @@ def add_item():
 
 
 @app.route('/catalog/add/', methods=['POST'])
+@login_required
 def add_item_save():
     form = request.form
 
@@ -77,16 +135,14 @@ def add_item_save():
 
 @app.route('/catalog/<category>/')
 def show_category(category):
-
     items = session.query(Item).join(Category).filter(Category.name == category).order_by(desc(Item.id)).all()
 
     return render_template(
-        'category.html', cat_items=items, category=category, category_list=getCategories(),)
+        'category.html', cat_items=items, category=category, category_list=getCategories(), )
 
 
 @app.route('/catalog/<category>/<item>')
-def show_item(category,item):
-
+def show_item(category, item):
     item = session.query(Item).filter(Item.title == item).first()
 
     return render_template(
@@ -94,18 +150,19 @@ def show_item(category,item):
 
 
 @app.route('/catalog/<category>/<item_id>/edit')
-def edit_item(category ,item_id):
+@login_required
+def edit_item(category, item_id):
     category = session.query(Category).all()
     item = session.query(Item).filter(Item.id == item_id).first()
 
     return render_template(
         'item_form.html',
-        target_url=url_for('save_item',item_id=item_id), category_list=category, item=item)
+        target_url=url_for('save_item', item_id=item_id), category_list=category, item=item)
 
 
 @app.route('/catalog/<item_id>/save', methods=['POST'])
+@login_required
 def save_item(item_id):
-
     form = request.form
     item = session.query(Item).filter(Item.id == item_id).first()
 
@@ -120,22 +177,79 @@ def save_item(item_id):
 
 
 @app.route('/catalog/<category>/<item_id>/delete')
-def delete_item(category ,item_id):
+@login_required
+def delete_item(category, item_id):
     item = session.query(Item).filter(Item.id == item_id).first()
 
     return render_template(
         'item_delete.html',
-        target_url=url_for('delete_item_commit', item_id=item_id,category=category),
+        target_url=url_for('delete_item_commit', item_id=item_id, category=category),
         item=item)
 
 
 @app.route('/catalog/<category>/<item_id>/delete', methods=['POST'])
+@login_required
 def delete_item_commit(category, item_id):
     session.query(Item).filter(Item.id == item_id).delete()
     session.commit()
 
     return redirect(url_for('index'))
 
+
+@app.route('/login')
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    google = get_google_auth()
+    auth_url, state = google.authorization_url(
+        Auth.AUTH_URI, access_type='offline')
+    session['oauth_state'] = state
+    return redirect(auth_url)
+
+
+@app.route('/gCallback')
+def callback():
+    if current_user is not None and current_user.is_authenticated:
+        return redirect(url_for('index'))
+    if 'error' in request.args:
+        if request.args.get('error') == 'access_denied':
+            return 'You denied access.'
+        return 'Error encountered.'
+    if 'code' not in request.args and 'state' not in request.args:
+        return redirect(url_for('login'))
+    else:
+        google = get_google_auth(state=session['oauth_state'])
+        try:
+            token = google.fetch_token(
+                Auth.TOKEN_URI,
+                client_secret=Auth.CLIENT_SECRET,
+                authorization_response=request.url)
+        except HTTPError:
+            return 'HTTPError occurred.'
+        google = get_google_auth(token=token)
+        resp = google.get(Auth.USER_INFO)
+        if resp.status_code == 200:
+            user_data = resp.json()
+            email = user_data['email']
+            user = User.query.filter_by(email=email).first()
+            if user is None:
+                user = User()
+                user.email = email
+            user.name = user_data['name']
+            print(token)
+            user.tokens = json.dumps(token)
+
+            session.add(User(email=user.email, token=user.token, name=user.name))
+            session.commit()
+            login_user(user)
+            return redirect(url_for('index'))
+        return 'Could not fetch your information.'
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run()
