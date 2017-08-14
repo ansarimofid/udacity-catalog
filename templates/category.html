@@ -1,0 +1,7 @@
+{% extends 'main.html' %}
+{% block cat_item %}
+    <h2>{{ category }} Item</h2>
+    {% for it in cat_items %}
+        <p>{{ it.title }}</p>
+    {% endfor %}
+{% endblock %}

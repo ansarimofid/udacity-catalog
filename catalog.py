@@ -1,5 +1,5 @@
 from flask import Flask,render_template, request, redirect, url_for, jsonify
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine,desc
 from sqlalchemy.orm import sessionmaker
 
 from database_setup import Base, Category, Item, User
@@ -17,7 +17,8 @@ session = DBSession()
 @app.route('/')
 def hello_world():
     category = session.query(Category).all()
-    return render_template('main.html', category_list=getCategories())
+    latest_item = session.query(Item).order_by(desc(Item.id)).limit(10).all()
+    return render_template('main.html', category_list=getCategories(), items=latest_item)
 
 @app.route('/categories')
 def view_category_json():
@@ -42,6 +43,12 @@ def add_category_save():
     return redirect(url_for('add_category'))
 
 
+@app.route('/catalog')
+def view_catalog_json():
+    item_obj = session.query(Item).all()
+    return jsonify(item=[i.serialize for i in item_obj])
+
+
 @app.route('/catalog/add/')
 def add_item():
     category = session.query(Category).all()
@@ -57,10 +64,21 @@ def add_item_save():
     item = Item(
         title=form['title'],
         description=form['desc'],
-        cat_id=form['title'],)
+        cat_id=form['cat_id'])
     session.add(item)
     session.commit()
     return redirect(url_for('add_item'))
+
+
+@app.route('/catalog/<category>/')
+def show_category(category):
+
+    items = session.query(Item).join(Category).filter(Category.name == category).order_by(desc(Item.id)).all()
+
+    # category = session.query(Category).all()
+    return render_template(
+        'category.html', cat_items=items, category=category, category_list=getCategories(),)
+
 
 
 if __name__ == '__main__':

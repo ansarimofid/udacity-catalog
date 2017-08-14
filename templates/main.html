@@ -1,12 +1,23 @@
-{%  extends 'base.html' %}
+{% extends 'base.html' %}
 
-{%  block content %}
-    <div uk-grid>
-        <div class="uk-width-1-2@m">
+{% block content %}
+    <div>
+        <div uk-grid>
+        <div class="uk-width-1-4@m"></div>
+        <div class="uk-width-1-4@m">
+            <h2>Categories</h2>
             {% for c in category_list %}
-            <p>{{ c }}</p>
-            {%  endfor %}
+                <div class="uk-text-large uk-text-bold"><a href="/catalog/{{ c }}/">{{ c }}</a></div>
+            {% endfor %}
         </div>
-        <div class="uk-width-1-2@m"></div>
+        <div class="uk-width-1-2@m">
+            {% block cat_item %}
+                <h2>Latest Item</h2>
+                {% for it in items %}
+                    <p>{{ it.title }}</p>
+                {% endfor %}
+            {% endblock %}
+        </div>
     </div>
-{%  endblock %}
+    </div>
+{% endblock %}
