@@ -1,0 +1,12 @@
+{%  extends 'base.html' %}
+
+{%  block content %}
+    <div uk-grid>
+        <div class="uk-width-1-2@m">
+            {% for c in category_list %}
+            <p>{{ c }}</p>
+            {%  endfor %}
+        </div>
+        <div class="uk-width-1-2@m"></div>
+    </div>
+{%  endblock %}

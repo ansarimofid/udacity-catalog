@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+    <form action="{{ target_url }}" class="category-form uk-text-center" method="post">
+    <fieldset class="uk-fieldset uk-width-1-2@m uk-width-1-1@s">
+        <legend class="uk-legend">Add Category</legend>
+        <div class="uk-margin">
+            <input class="uk-input" type="text" placeholder="Category Name" name="name">
+        </div>
+        <div class="uk-margin">
+            <input class="uk-input uk-button uk-button-primary" type="submit" value="Add Category">
+        </div>
+    </fieldset>
+    </form>
+{% endblock %}
