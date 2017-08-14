@@ -81,6 +81,22 @@ def index():
     return render_template('main.html', category_list=getCategories(), items=latest_item)
 
 
+@app.route('/catalog.json')
+def view_catalog_json():
+    res_json = {}
+    res_json['category'] = []
+    categories = dbsession.query(Category).all()
+
+    for cat in categories:
+        catDict = {}
+        catDict['id'] = cat.id
+        catDict['name'] = cat.name
+        catDict['items'] = [i.serialize for i in cat.item]
+        res_json['category'].append(catDict)
+
+    return jsonify(res_json)
+
+
 @app.route('/categories')
 def view_category_json():
     cat = dbsession.query(Category).all()
@@ -104,12 +120,6 @@ def add_category_save():
     dbsession.add(category)
     dbsession.commit()
     return redirect(url_for('add_category'))
-
-
-@app.route('/catalog')
-def view_catalog_json():
-    item_obj = dbsession.query(Item).all()
-    return jsonify(item=[i.serialize for i in item_obj])
 
 
 @app.route('/catalog/add/')
@@ -248,11 +258,13 @@ def callback():
             return redirect(url_for('index'))
         return 'Could not fetch your information.'
 
+
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
     app.run()
