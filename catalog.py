@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
 
@@ -12,7 +12,8 @@ from helper import getCategories
 import os
 import json
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+# basedir = os.path.abspath(os.path.dirname(__file__))
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 """Configuration"""
 
@@ -21,7 +22,7 @@ class Auth:
     """Google Project Credentials"""
     CLIENT_ID = ('747877814525-6nb508gui4o896ibppgics50v6bs7srm.apps.googleusercontent.com')
     CLIENT_SECRET = 'pvMBKkrRR7OU7Hj_5S6S9uMN'
-    REDIRECT_URI = 'https://localhost:5000/gCallback'
+    REDIRECT_URI = 'http://127.0.0.1:5000/gCallback'
     AUTH_URI = 'https://accounts.google.com/o/oauth2/auth'
     TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
     USER_INFO = 'https://www.googleapis.com/userinfo/v2/me'
@@ -36,12 +37,13 @@ class Config:
 
 """initialisation"""
 app = Flask(__name__)
+app.secret_key = "super secret key"
 # app.config.from_object(config['dev'])
 engine = create_engine('sqlite:///catalog.db')
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
-session = DBSession()
+dbsession = DBSession()
 
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
@@ -50,7 +52,7 @@ login_manager.session_protection = "strong"
 
 @login_manager.user_loader
 def load_user(user_id):
-    return session.query(User).filter(User.id == user_id).first()
+    return dbsession.query(User).filter(User.id == user_id).first()
 
 
 def get_google_auth(state=None, token=None):
@@ -75,13 +77,13 @@ def page_not_found(error):
 
 @app.route('/')
 def index():
-    latest_item = session.query(Item).join(Category).order_by(desc(Item.id)).limit(10).all()
+    latest_item = dbsession.query(Item).join(Category).order_by(desc(Item.id)).limit(10).all()
     return render_template('main.html', category_list=getCategories(), items=latest_item)
 
 
 @app.route('/categories')
 def view_category_json():
-    cat = session.query(Category).all()
+    cat = dbsession.query(Category).all()
     return jsonify(categoy=[i.serialize for i in cat])
 
 
@@ -99,21 +101,21 @@ def add_category_save():
     form = request.form
 
     category = Category(name=form['name'])
-    session.add(category)
-    session.commit()
+    dbsession.add(category)
+    dbsession.commit()
     return redirect(url_for('add_category'))
 
 
 @app.route('/catalog')
 def view_catalog_json():
-    item_obj = session.query(Item).all()
+    item_obj = dbsession.query(Item).all()
     return jsonify(item=[i.serialize for i in item_obj])
 
 
 @app.route('/catalog/add/')
 @login_required
 def add_item():
-    category = session.query(Category).all()
+    category = dbsession.query(Category).all()
     return render_template(
         'item_form.html',
         target_url=url_for('add_item_save'), category_list=category, item=Item())
@@ -128,14 +130,14 @@ def add_item_save():
         title=form['title'],
         description=form['desc'],
         cat_id=form['cat_id'])
-    session.add(item)
-    session.commit()
+    dbsession.add(item)
+    dbsession.commit()
     return redirect(url_for('index'))
 
 
 @app.route('/catalog/<category>/')
 def show_category(category):
-    items = session.query(Item).join(Category).filter(Category.name == category).order_by(desc(Item.id)).all()
+    items = dbsession.query(Item).join(Category).filter(Category.name == category).order_by(desc(Item.id)).all()
 
     return render_template(
         'category.html', cat_items=items, category=category, category_list=getCategories(), )
@@ -143,7 +145,7 @@ def show_category(category):
 
 @app.route('/catalog/<category>/<item>')
 def show_item(category, item):
-    item = session.query(Item).filter(Item.title == item).first()
+    item = dbsession.query(Item).filter(Item.title == item).first()
 
     return render_template(
         'item.html', item=item, category=category)
@@ -152,8 +154,8 @@ def show_item(category, item):
 @app.route('/catalog/<category>/<item_id>/edit')
 @login_required
 def edit_item(category, item_id):
-    category = session.query(Category).all()
-    item = session.query(Item).filter(Item.id == item_id).first()
+    category = dbsession.query(Category).all()
+    item = dbsession.query(Item).filter(Item.id == item_id).first()
 
     return render_template(
         'item_form.html',
@@ -164,14 +166,14 @@ def edit_item(category, item_id):
 @login_required
 def save_item(item_id):
     form = request.form
-    item = session.query(Item).filter(Item.id == item_id).first()
+    item = dbsession.query(Item).filter(Item.id == item_id).first()
 
     item.title = form['title']
     item.description = form['desc']
     item.cat_id = form['cat_id']
 
-    session.add(item)
-    session.commit()
+    dbsession.add(item)
+    dbsession.commit()
 
     return redirect(url_for('index'))
 
@@ -179,7 +181,7 @@ def save_item(item_id):
 @app.route('/catalog/<category>/<item_id>/delete')
 @login_required
 def delete_item(category, item_id):
-    item = session.query(Item).filter(Item.id == item_id).first()
+    item = dbsession.query(Item).filter(Item.id == item_id).first()
 
     return render_template(
         'item_delete.html',
@@ -190,8 +192,8 @@ def delete_item(category, item_id):
 @app.route('/catalog/<category>/<item_id>/delete', methods=['POST'])
 @login_required
 def delete_item_commit(category, item_id):
-    session.query(Item).filter(Item.id == item_id).delete()
-    session.commit()
+    dbsession.query(Item).filter(Item.id == item_id).delete()
+    dbsession.commit()
 
     return redirect(url_for('index'))
 
@@ -231,7 +233,7 @@ def callback():
         if resp.status_code == 200:
             user_data = resp.json()
             email = user_data['email']
-            user = User.query.filter_by(email=email).first()
+            user = dbsession.query(User).filter_by(email=email).first()
             if user is None:
                 user = User()
                 user.email = email
@@ -239,8 +241,8 @@ def callback():
             print(token)
             user.tokens = json.dumps(token)
 
-            session.add(User(email=user.email, token=user.token, name=user.name))
-            session.commit()
+            dbsession.add(User(email=user.email, token=user.token, name=user.name))
+            dbsession.commit()
             login_user(user)
             return redirect(url_for('index'))
         return 'Could not fetch your information.'
