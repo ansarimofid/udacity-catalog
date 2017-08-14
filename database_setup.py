@@ -60,7 +60,8 @@ class Item(Base):
             'id': self.id,
             'title': self.title,
             'description': self.description,
-            'cat_id': self.cat_id
+            'cat_id': self.cat_id,
+            'user_id':self.user_id
         }
 
 engine = create_engine(

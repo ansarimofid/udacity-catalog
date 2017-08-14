@@ -129,7 +129,8 @@ def add_item_save():
     item = Item(
         title=form['title'],
         description=form['desc'],
-        cat_id=form['cat_id'])
+        cat_id=form['cat_id'],
+        user_id=current_user.id)
     dbsession.add(item)
     dbsession.commit()
     return redirect(url_for('index'))
