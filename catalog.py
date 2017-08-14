@@ -16,7 +16,7 @@ session = DBSession()
 
 @app.route('/')
 def hello_world():
-    latest_item = session.query(Item).order_by(desc(Item.id)).limit(10).all()
+    latest_item = session.query(Item).join(Category).order_by(desc(Item.id)).limit(10).all()
     return render_template('main.html', category_list=getCategories(), items=latest_item)
 
 @app.route('/categories')

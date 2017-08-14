@@ -11,10 +11,11 @@
             {% endfor %}
         </div>
         <div class="uk-width-1-2@m">
+            <div><a href="/catalog/add/">Add Item</a></div>
             {% block cat_item %}
-                <h2>Latest Item</h2>
+                <h2 class="uk-margin-remove-top">Latest Item</h2>
                 {% for it in items %}
-                    <p>{{ it.title }}</p>
+                    <div><a href="/catalog/{{ it.category.name }}/{{ it.title }}">{{ it.title }}</a> ({{ it.category.name }})</div>
                 {% endfor %}
             {% endblock %}
         </div>

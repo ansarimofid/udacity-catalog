@@ -1,6 +1,6 @@
 {% extends 'main.html' %}
 {% block cat_item %}
-    <h2>{{ category }} Item</h2>
+    <h2 class="uk-margin-remove-top">{{ category }} ( {{ cat_items | length }} Items )</h2>
     {% for it in cat_items %}
         <div>
             <a href="/catalog/{{ category }}/{{ it.title }}">{{ it.title }}</a>
