@@ -15,7 +15,7 @@ session = DBSession()
 
 
 @app.route('/')
-def hello_world():
+def index():
     latest_item = session.query(Item).join(Category).order_by(desc(Item.id)).limit(10).all()
     return render_template('main.html', category_list=getCategories(), items=latest_item)
 
@@ -84,7 +84,29 @@ def show_item(category,item):
     item = session.query(Item).filter(Item.title == item).first()
 
     return render_template(
-        'item.html', item=item)
+        'item.html', item=item, category=category)
+
+
+
+@app.route('/catalog/<category>/<item_id>/edit')
+def edit_item(category,item_id):
+    category = session.query(Category).all()
+    item = session.query(Item).filter(Item.id == item_id).first()
+
+    return render_template(
+        'item_form.html',
+        target_url=url_for('save_item',item_id=item_id), category_list=category, item=item)
+
+
+
+@app.route('/catalog/<item_id>e/save', methods=['POST'])
+def save_item(item_id):
+
+    item = session.query(Item).filter(Item.id == item_id).first()
+
+    return render_template(
+        'item_form.html',
+        target_url=url_for('add_item_save'), category_list=category, item=Item())
 
 
 
