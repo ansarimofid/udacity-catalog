@@ -18,7 +18,11 @@
         <div class="uk-navbar-right">
 
             <ul class="uk-navbar-nav">
+                {% if current_user.is_authenticated %}
+                    <li class="uk-active"><a href="/logout"><button class="uk-button uk-button-primary">Logout</button></a></li>
+                {% else %}
                 <li class="uk-active"><a href="/login"><button class="uk-button uk-button-primary">Login</button></a></li>
+                {% endif %}
             </ul>
 
         </div>
