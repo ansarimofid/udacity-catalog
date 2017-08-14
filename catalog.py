@@ -14,6 +14,11 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 
+@app.errorhandler(404)
+def page_not_found(error):
+    return 'Error:404. Sorry! This page does not exist', 404
+
+
 @app.route('/')
 def index():
     latest_item = session.query(Item).join(Category).order_by(desc(Item.id)).limit(10).all()
