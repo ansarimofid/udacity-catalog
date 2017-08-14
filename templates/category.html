@@ -2,6 +2,8 @@
 {% block cat_item %}
     <h2>{{ category }} Item</h2>
     {% for it in cat_items %}
-        <p>{{ it.title }}</p>
+        <div>
+            <a href="/catalog/{{ category }}/{{ it.title }}">{{ it.title }}</a>
+        </div>
     {% endfor %}
 {% endblock %}

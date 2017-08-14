@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div uk-grid>
+        <div class="uk-width-1-4@m"></div>
+        <div class="uk-width-1-2@m">
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.description }}</p>
+        </div>
+    </div>
+{% endblock %}

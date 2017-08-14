@@ -16,7 +16,6 @@ session = DBSession()
 
 @app.route('/')
 def hello_world():
-    category = session.query(Category).all()
     latest_item = session.query(Item).order_by(desc(Item.id)).limit(10).all()
     return render_template('main.html', category_list=getCategories(), items=latest_item)
 
@@ -75,9 +74,17 @@ def show_category(category):
 
     items = session.query(Item).join(Category).filter(Category.name == category).order_by(desc(Item.id)).all()
 
-    # category = session.query(Category).all()
     return render_template(
         'category.html', cat_items=items, category=category, category_list=getCategories(),)
+
+
+@app.route('/catalog/<category>/<item>')
+def show_item(category,item):
+
+    item = session.query(Item).filter(Item.title == item).first()
+
+    return render_template(
+        'item.html', item=item)
 
 
 
