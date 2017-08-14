@@ -19,10 +19,11 @@ def index():
     latest_item = session.query(Item).join(Category).order_by(desc(Item.id)).limit(10).all()
     return render_template('main.html', category_list=getCategories(), items=latest_item)
 
+
 @app.route('/categories')
 def view_category_json():
     cat = session.query(Category).all()
-    return jsonify(categoy = [i.serialize for i in cat])
+    return jsonify(categoy=[i.serialize for i in cat])
 
 
 @app.route('/categories/add/')
@@ -87,16 +88,14 @@ def show_item(category,item):
         'item.html', item=item, category=category)
 
 
-
 @app.route('/catalog/<category>/<item_id>/edit')
-def edit_item(category,item_id):
+def edit_item(category ,item_id):
     category = session.query(Category).all()
     item = session.query(Item).filter(Item.id == item_id).first()
 
     return render_template(
         'item_form.html',
         target_url=url_for('save_item',item_id=item_id), category_list=category, item=item)
-
 
 
 @app.route('/catalog/<item_id>/save', methods=['POST'])
@@ -114,6 +113,23 @@ def save_item(item_id):
 
     return redirect(url_for('index'))
 
+
+@app.route('/catalog/<category>/<item_id>/delete')
+def delete_item(category ,item_id):
+    item = session.query(Item).filter(Item.id == item_id).first()
+
+    return render_template(
+        'item_delete.html',
+        target_url=url_for('delete_item_commit', item_id=item_id,category=category),
+        item=item)
+
+
+@app.route('/catalog/<category>/<item_id>/delete', methods=['POST'])
+def delete_item_commit(category, item_id):
+    session.query(Item).filter(Item.id == item_id).delete()
+    session.commit()
+
+    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':

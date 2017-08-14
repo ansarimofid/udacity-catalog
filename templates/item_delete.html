@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div uk-grid>
+        <div class="uk-width-1-4@m"></div>
+        <form class="uk-width-1-2@m" action="{{ target_url }}" class="category-form uk-text-center" method="post">
+            Are you sure you want to delete <span class="uk-text-primary">{{ item.title }}?</span>
+            <div class="uk-margin-top">
+                <input class="uk-input uk-button uk-button-danger" type="submit" value="Delete">
+            </div>
+        </form>
+    </div>
+{% endblock %}
