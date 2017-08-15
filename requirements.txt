@@ -1,0 +1,5 @@
+requests_oauthlib==0.8.0
+SQLAlchemy==1.1.13
+Flask_Login==0.4.0
+requests==2.11.1
+Flask==0.12.2
