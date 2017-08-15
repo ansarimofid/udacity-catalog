@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session  # noqa
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
 
@@ -19,7 +19,7 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 class Auth:
     """Google Project Details"""
-    CLIENT_ID = ('747877814525-6nb508gui4o896ibppgics50v6bs7srm.apps.googleusercontent.com')
+    CLIENT_ID = '747877814525-6nb508gui4o896ibppgics50v6bs7srm.apps.googleusercontent.com'  # noqa
     CLIENT_SECRET = 'pvMBKkrRR7OU7Hj_5S6S9uMN'
     REDIRECT_URI = 'http://127.0.0.1:5000/gCallback'
     AUTH_URI = 'https://accounts.google.com/o/oauth2/auth'
@@ -85,8 +85,10 @@ def index():
     """
     Loads index page
     """
-    latest_item = dbsession.query(Item).join(Category).order_by(desc(Item.id)).limit(10).all()
-    return render_template('main.html', category_list=getCategories(), items=latest_item)
+    latest_item = dbsession.query(Item).join(Category).order_by(desc(Item.id)).limit(10).all()  # noqa
+    return render_template('main.html',
+                           category_list=getCategories(),
+                           items=latest_item)
 
 
 @app.route('/catalog.json')
@@ -151,7 +153,9 @@ def add_item():
     category = dbsession.query(Category).all()
     return render_template(
         'item_form.html',
-        target_url=url_for('add_item_save'), category_list=category, item=Item())
+        target_url=url_for('add_item_save'),
+        category_list=category,
+        item=Item())
 
 
 @app.route('/catalog/add/', methods=['POST'])
@@ -177,10 +181,13 @@ def show_category(category):
     """
     Renders category items
     """
-    items = dbsession.query(Item).join(Category).filter(Category.name == category).order_by(desc(Item.id)).all()
+    items = dbsession.query(Item).join(Category).filter(Category.name == category).order_by(desc(Item.id)).all()  # noqa
 
     return render_template(
-        'category.html', cat_items=items, category=category, category_list=getCategories(), )
+        'category.html',
+        cat_items=items,
+        category=category,
+        category_list=getCategories())
 
 
 @app.route('/catalog/<category>/<item>')
@@ -205,7 +212,9 @@ def edit_item(category, item_id):
 
     return render_template(
         'item_form.html',
-        target_url=url_for('save_item', item_id=item_id), category_list=category, item=item)
+        target_url=url_for('save_item', item_id=item_id),
+        category_list=category,
+        item=item)
 
 
 @app.route('/catalog/<item_id>/save', methods=['POST'])
@@ -237,7 +246,7 @@ def delete_item(category, item_id):
 
     return render_template(
         'item_delete.html',
-        target_url=url_for('delete_item_commit', item_id=item_id, category=category),
+        target_url=url_for('delete_item_commit', item_id=item_id, category=category),  # noqa
         item=item)
 
 
@@ -309,7 +318,7 @@ def callback():
             print(token)
             user.tokens = json.dumps(token)
             # Adds user to databse
-            dbsession.add(User(email=user.email, token=user.token, name=user.name))
+            dbsession.add(User(email=user.email, token=user.token, name=user.name))  # noqa
             dbsession.commit()
             login_user(user)
             # redirects to homepage
