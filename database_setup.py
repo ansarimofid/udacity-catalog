@@ -16,6 +16,9 @@ Base = declarative_base()
 
 
 class User(Base, UserMixin):
+    """
+    User model to store USER data
+    """
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True)
@@ -27,6 +30,9 @@ class User(Base, UserMixin):
 
 
 class Category(Base):
+    """
+    Category model to store category details
+    """
     __tablename__ = 'category'
     name = Column(String(80), nullable=False)
     id = Column(Integer, primary_key=True)
@@ -43,6 +49,9 @@ class Category(Base):
 
 
 class Item(Base):
+    """
+    Items model to store item details
+    """
     __tablename__ = 'item'
 
     title = Column(String(80), nullable=False)

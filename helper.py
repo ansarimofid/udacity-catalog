@@ -11,5 +11,8 @@ session = DBSession()
 
 
 def getCategories():
+    """
+    Loads category names
+    """
     cat = session.query(Category).all()
     return [i.name for i in cat]
