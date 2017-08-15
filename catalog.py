@@ -3,7 +3,7 @@ from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
 
 from flask_login import LoginManager, login_required, login_user, \
-    logout_user, current_user, UserMixin
+    logout_user, current_user
 from requests_oauthlib import OAuth2Session
 from requests.exceptions import HTTPError
 
@@ -12,7 +12,6 @@ from helper import getCategories
 import os
 import json
 
-# basedir = os.path.abspath(os.path.dirname(__file__))
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 """Configuration"""
@@ -83,16 +82,16 @@ def index():
 
 @app.route('/catalog.json')
 def view_catalog_json():
-    res_json = {}
+    res_json = dict()
     res_json['category'] = []
     categories = dbsession.query(Category).all()
 
     for cat in categories:
-        catDict = {}
-        catDict['id'] = cat.id
-        catDict['name'] = cat.name
-        catDict['items'] = [i.serialize for i in cat.item]
-        res_json['category'].append(catDict)
+        cat_dict = dict()
+        cat_dict['id'] = cat.id
+        cat_dict['name'] = cat.name
+        cat_dict['items'] = [i.serialize for i in cat.item]
+        res_json['category'].append(cat_dict)
 
     return jsonify(res_json)
 

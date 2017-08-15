@@ -6,10 +6,10 @@
             <h3>{{ item.title }}</h3>
             <p>{{ item.description }}</p>
             {% if current_user.is_authenticated %}
-            <div>
-                <a href="/catalog/{{ category}}/{{ item.id }}/edit">Edit</a>
-                <a href="/catalog/{{ category}}/{{ item.id }}/delete">Delete</a>
-            </div>
+                <div>
+                    <a href="/catalog/{{ category }}/{{ item.id }}/edit">Edit</a>
+                    <a href="/catalog/{{ category }}/{{ item.id }}/delete">Delete</a>
+                </div>
             {% endif %}
         </div>
     </div>

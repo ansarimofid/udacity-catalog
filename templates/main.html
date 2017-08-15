@@ -3,24 +3,26 @@
 {% block content %}
     <div>
         <div uk-grid>
-        <div class="uk-width-1-4@m"></div>
-        <div class="uk-width-1-4@m">
-            <h2>Categories</h2>
-            {% for c in category_list %}
-                <div class="uk-text-large uk-text-bold"><a href="/catalog/{{ c }}/">{{ c }}</a></div>
-            {% endfor %}
-        </div>
-        <div class="uk-width-1-2@m">
-            {% if current_user.is_authenticated %}
-            <div><a href="/catalog/add/">Add Item +</a></div>
-            {% endif %}
-            {% block cat_item %}
-                <h2 class="uk-margin-remove-top">Latest Item</h2>
-                {% for it in items %}
-                    <div><a href="/catalog/{{ it.category.name }}/{{ it.title }}">{{ it.title }}</a> ({{ it.category.name }})</div>
+            <div class="uk-width-1-4@m"></div>
+            <div class="uk-width-1-4@m">
+                <h2>Categories</h2>
+                {% for c in category_list %}
+                    <div class="uk-text-large uk-text-bold"><a href="/catalog/{{ c }}/">{{ c }}</a></div>
                 {% endfor %}
-            {% endblock %}
+            </div>
+            <div class="uk-width-1-2@m">
+                {% if current_user.is_authenticated %}
+                    <div><a href="/catalog/add/">Add Item +</a></div>
+                {% endif %}
+                {% block cat_item %}
+                    <h2 class="uk-margin-remove-top">Latest Item</h2>
+                    {% for it in items %}
+                        <div><a href="/catalog/{{ it.category.name }}/{{ it.title }}">{{ it.title }}</a>
+                            ({{ it.category.name }})
+                        </div>
+                    {% endfor %}
+                {% endblock %}
+            </div>
         </div>
-    </div>
     </div>
 {% endblock %}

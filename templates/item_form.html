@@ -1,24 +1,26 @@
 {% extends 'base.html' %}
 {% block content %}
     <form action="{{ target_url }}" class="category-form uk-text-center" method="post">
-    <fieldset class="uk-fieldset uk-width-1-2@m uk-width-1-1@s">
-        <legend class="uk-legend">Add Item</legend>
-        <div class="uk-margin">
-            <input class="uk-input" type="text" placeholder="Title" name="title" value="{{ item.title if item.title != None }}">
-        </div>
-        <div class="uk-margin">
-            <textarea class="uk-textarea" rows="5" placeholder="Description" name="desc">{{ item.description if item.description != None }}</textarea>
-        </div>
-        <div class="uk-margin">
-            <select class="uk-select" name="cat_id">
-                {% for c in category_list %}
-                <option value="{{ c.id }}" {% if c.id == item.cat_id %}selected{% endif %}>{{ c.name }}</option>
-                {%  endfor %}
-            </select>
-        </div>
-        <div class="uk-margin">
-            <input class="uk-input uk-button uk-button-primary" type="submit" value="Save">
-        </div>
-    </fieldset>
+        <fieldset class="uk-fieldset uk-width-1-2@m uk-width-1-1@s">
+            <legend class="uk-legend">Add Item</legend>
+            <div class="uk-margin">
+                <input class="uk-input" type="text" placeholder="Title" name="title"
+                       value="{{ item.title if item.title != None }}">
+            </div>
+            <div class="uk-margin">
+                <textarea class="uk-textarea" rows="5" placeholder="Description"
+                          name="desc">{{ item.description if item.description != None }}</textarea>
+            </div>
+            <div class="uk-margin">
+                <select class="uk-select" name="cat_id">
+                    {% for c in category_list %}
+                        <option value="{{ c.id }}" {% if c.id == item.cat_id %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="uk-margin">
+                <input class="uk-input uk-button uk-button-primary" type="submit" value="Save">
+            </div>
+        </fieldset>
     </form>
 {% endblock %}
