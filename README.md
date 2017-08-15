@@ -1,10 +1,9 @@
 # Catalog App
   It's a flask based app which shows Item stored in different categories. 
-  It implements the CRUD in the app. Along with this it also user third party authentication if someone want to make any changes to the item details or wants to add any items.
+  It implements the CRUD in the app. Along with this it also uses third party authentication if someone want to make any changes to the item details or wants to add any items.
   
-## Runnig the App
+## Running the App
   
-##Running
 #### Step 1
 * Install the dependencies
 ```Shell
