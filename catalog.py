@@ -210,6 +210,10 @@ def edit_item(category, item_id):
     category = dbsession.query(Category).all()
     item = dbsession.query(Item).filter(Item.id == item_id).first()
 
+    # checks if user owns the item
+    if item.user_id != current_user.id:
+        return "<h1>You are not authorized to make changes</h1>"
+
     return render_template(
         'item_form.html',
         target_url=url_for('save_item', item_id=item_id),
@@ -225,6 +229,10 @@ def save_item(item_id):
     """
     form = request.form
     item = dbsession.query(Item).filter(Item.id == item_id).first()
+
+    # checks if user owns the item
+    if item.user_id != current_user.id:
+        return "<h1>You are not authorized to make changes</h1>"
 
     item.title = form['title']
     item.description = form['desc']
@@ -244,6 +252,10 @@ def delete_item(category, item_id):
     """
     item = dbsession.query(Item).filter(Item.id == item_id).first()
 
+    # checks if user owns the item
+    if item.user_id != current_user.id:
+        return "<h1>You are not authorized to make changes</h1>"
+
     return render_template(
         'item_delete.html',
         target_url=url_for('delete_item_commit', item_id=item_id, category=category),  # noqa
@@ -256,6 +268,12 @@ def delete_item_commit(category, item_id):
     """
     Removes Item from database
     """
+    item = dbsession.query(Item).filter(Item.id == item_id).first()
+
+    # checks if user owns the item
+    if item.user_id != current_user.id:
+        return "<h1>You are not authorized to make changes</h1>"
+
     dbsession.query(Item).filter(Item.id == item_id).delete()
     dbsession.commit()
 
